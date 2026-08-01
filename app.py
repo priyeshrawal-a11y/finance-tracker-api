@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import sqlite3 
 
 app = Flask(__name__)
@@ -31,6 +31,30 @@ def get_transactions():
         transactions_list.append(transaction_dict)
 
     return jsonify(transactions_list)
+
+@app.route("/transactions", methods=["POST"])
+def create_transaction():
+    data = request.json
+
+    connection = sqlite3.connect('finance.db')
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    INSERT INTO transactions (name, amount, category, date, transaction_type)
+    VALUES (?, ?, ?, ?, ?)
+    """, (
+        data["name"],
+        data["amount"],
+        data["category"],
+        data["date"],
+        data["transaction_type"]
+    ))
+
+    connection.commit()
+
+    return jsonify(data)
+
+
 
 class Transaction:
     def __init__(self, name, amount, category, date, transaction_type):
