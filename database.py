@@ -1,23 +1,50 @@
 import sqlite3
 
+
 def get_connection():
     return sqlite3.connect("finance.db")
 
 
-def create_tables():
+def get_all_transactions():
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM transactions")
+    transactions = cursor.fetchall()
+
+    connection.close()
+
+    return transactions
+
+
+def create_transaction(data):
     connection = get_connection()
     cursor = connection.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL,
-        amount REAL NOT NULL,
-        category TEXT NOT NULL,
-        date TEXT NOT NULL,
-        transaction_type TEXT NOT NULL
+    INSERT INTO transactions 
+    (name, amount, category, date, transaction_type)
+    VALUES (?, ?, ?, ?, ?)
+    """, (
+        data["name"],
+        data["amount"],
+        data["category"],
+        data["date"],
+        data["transaction_type"]
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+def delete_transaction(id):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "DELETE FROM transactions WHERE id=?",
+        (id,)
     )
-    """)
 
     connection.commit()
     connection.close()
