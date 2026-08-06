@@ -54,6 +54,19 @@ def create_transaction():
 
     return jsonify(data)
 
+@app.route("/transactions/<int:id>", methods=["DELETE"])
+def delete_transaction(id):
+    connection = sqlite3.connect("finance.db")
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM transactions WHERE id=?", (id,))
+    connection.commit()
+    connection.close()
+
+    return jsonify({
+    "message": f"Transaction {id} deleted successfully."
+})
+
 
 
 class Transaction:
