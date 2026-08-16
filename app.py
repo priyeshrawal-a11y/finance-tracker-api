@@ -40,13 +40,38 @@ def add_transaction():
 
     data = request.json
 
+    required_fields = [
+        "name",
+        "amount",
+        "category",
+        "date",
+        "transaction_type"
+    ]
+
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"{field} is required"}), 400
+
+    if not isinstance(data["amount"], (int, float)):
+        return jsonify({"error": "Amount must be a number"}), 400
+
+    if data["amount"] <= 0:
+        return jsonify({"error": "Amount must be greater than 0"}), 400
+
+    if data["transaction_type"] not in ["Income", "Expense"]:
+        return jsonify({
+            "error": "Transaction type must be Income or Expense"
+        }), 400
+
+    if not data["name"].strip():
+        return jsonify({"error": "Name cannot be empty"}), 400
+
     create_transaction(data)
 
     return jsonify({
         "message": "Transaction created successfully",
         "transaction": data
-    })
-
+    }), 201
 
 @app.route("/transactions/<int:id>", methods=["DELETE"])
 def remove_transaction(id):
