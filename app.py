@@ -2,7 +2,8 @@ from flask import Flask, jsonify, request
 from database import (
     get_all_transactions,
     create_transaction,
-    delete_transaction
+    delete_transaction,
+    update_transaction
 )
 
 app = Flask(__name__)
@@ -87,6 +88,39 @@ def remove_transaction(id):
         "message": f"Transaction {id} deleted successfully"
     }), 200
 
+@app.route("/transactions/<int:id>", methods=["PUT"])
+def update_transaction_route(id):
+
+    data = request.json
+
+    required_fields = [
+        "name",
+        "amount",
+        "category",
+        "date",
+        "transaction_type"
+    ]
+
+    for field in required_fields:
+        if field not in data:
+            return jsonify({
+                "error": f"{field} is required"
+            }), 400
+
+    updated = update_transaction(id, data)
+
+    if not updated:
+        return jsonify({
+            "error": "Transaction not found"
+        }), 404
+
+    return jsonify({
+        "message": "Transaction updated successfully",
+        "transaction": data
+    }), 200
+
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+

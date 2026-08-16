@@ -52,3 +52,33 @@ def delete_transaction(id):
 
     connection.commit()
     connection.close()
+
+def update_transaction(id, data):
+    connection = get_connection()
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    UPDATE transactions
+    SET name = ?,
+        amount = ?,
+        category = ?,
+        date = ?,
+        transaction_type = ?
+    WHERE id = ?
+    """, (
+        data["name"],
+        data["amount"],
+        data["category"],
+        data["date"],
+        data["transaction_type"],
+        id
+    ))
+
+    if cursor.rowcount == 0:
+        connection.close()
+        return False
+
+    connection.commit()
+    connection.close()
+
+    return True
