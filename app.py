@@ -76,11 +76,16 @@ def add_transaction():
 @app.route("/transactions/<int:id>", methods=["DELETE"])
 def remove_transaction(id):
 
-    delete_transaction(id)
+    deleted = delete_transaction(id)
+
+    if not deleted:
+        return jsonify({
+            "error": "Transaction not found"
+        }), 404
 
     return jsonify({
         "message": f"Transaction {id} deleted successfully"
-    })
+    }), 200
 
 
 if __name__ == "__main__":

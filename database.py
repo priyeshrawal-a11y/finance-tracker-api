@@ -46,5 +46,9 @@ def delete_transaction(id):
         (id,)
     )
 
+    if cursor.rowcount == 0:
+        connection.close()
+        return False
+
     connection.commit()
     connection.close()
