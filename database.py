@@ -1,12 +1,12 @@
 import sqlite3
 
 
-def get_connection():
-    return sqlite3.connect("finance.db")
+def get_connection(database="finance.db"):
+    return sqlite3.connect(database)
 
 
-def get_all_transactions():
-    connection = get_connection()
+def get_all_transactions(database="finance.db"):
+    connection = get_connection(database)
     cursor = connection.cursor()
 
     cursor.execute("SELECT * FROM transactions")
@@ -17,12 +17,12 @@ def get_all_transactions():
     return transactions
 
 
-def create_transaction(data):
-    connection = get_connection()
+def create_transaction(data, database="finance.db"):
+    connection = get_connection(database)
     cursor = connection.cursor()
 
     cursor.execute("""
-    INSERT INTO transactions 
+    INSERT INTO transactions
     (name, amount, category, date, transaction_type)
     VALUES (?, ?, ?, ?, ?)
     """, (
@@ -34,11 +34,16 @@ def create_transaction(data):
     ))
 
     connection.commit()
+
+    transaction_id = cursor.lastrowid
+
     connection.close()
 
+    return transaction_id
 
-def delete_transaction(id):
-    connection = get_connection()
+
+def delete_transaction(id, database="finance.db"):
+    connection = get_connection(database)
     cursor = connection.cursor()
 
     cursor.execute(
@@ -53,8 +58,10 @@ def delete_transaction(id):
     connection.commit()
     connection.close()
 
-def update_transaction(id, data):
-    connection = get_connection()
+    return True
+
+def update_transaction(id, data, database="finance.db"):
+    connection = get_connection(database)
     cursor = connection.cursor()
 
     cursor.execute("""
@@ -82,3 +89,22 @@ def update_transaction(id, data):
     connection.close()
 
     return True
+
+
+def init_db(database="finance.db"):
+    connection = get_connection(database)
+    cursor = connection.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        amount REAL NOT NULL,
+        category TEXT NOT NULL,
+        date TEXT NOT NULL,
+        transaction_type TEXT NOT NULL
+    )
+    """)
+
+    connection.commit()
+    connection.close()

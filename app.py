@@ -7,6 +7,7 @@ from database import (
 )
 
 app = Flask(__name__)
+app.config["DATABASE"] = "finance.db"
 
 
 @app.route("/")
@@ -17,7 +18,7 @@ def home():
 @app.route("/transactions")
 def get_transactions():
 
-    transactions = get_all_transactions()
+    transactions = get_all_transactions(app.config["DATABASE"])
 
     transactions_list = []
 
@@ -67,17 +68,26 @@ def add_transaction():
     if not data["name"].strip():
         return jsonify({"error": "Name cannot be empty"}), 400
 
-    create_transaction(data)
+    transaction_id = create_transaction(
+        data,
+        app.config["DATABASE"]
+)
 
     return jsonify({
         "message": "Transaction created successfully",
-        "transaction": data
+        "transaction": {
+            "id": transaction_id,
+            **data
+        }
     }), 201
 
 @app.route("/transactions/<int:id>", methods=["DELETE"])
 def remove_transaction(id):
 
-    deleted = delete_transaction(id)
+    deleted = delete_transaction(
+        id,
+        app.config["DATABASE"]
+)
 
     if not deleted:
         return jsonify({
