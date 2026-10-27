@@ -117,7 +117,11 @@ def update_transaction_route(id):
                 "error": f"{field} is required"
             }), 400
 
-    updated = update_transaction(id, data)
+    updated = update_transaction(
+    id,
+    data,
+    app.config["DATABASE"]
+)
 
     if not updated:
         return jsonify({

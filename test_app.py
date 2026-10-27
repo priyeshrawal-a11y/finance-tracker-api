@@ -77,3 +77,82 @@ def test_delete_transaction(client):
     )
 
     assert delete_response.status_code == 200
+
+def test_create_transaction_missing_field(client):
+    transaction = {
+        "name": "Test Coffee",
+        "amount": 4.50,
+        "category": "Food",
+        "date": "2026-10-27"
+        # transaction_type is missing
+    }
+
+    response = client.post(
+        "/transactions",
+        json=transaction
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "transaction_type is required"
+
+
+def test_create_transaction_invalid_amount(client):
+    transaction = {
+        "name": "Test Coffee",
+        "amount": -5,
+        "category": "Food",
+        "date": "2026-10-27",
+        "transaction_type": "Expense"
+    }
+
+    response = client.post(
+        "/transactions",
+        json=transaction
+    )
+
+    assert response.status_code == 400
+    assert response.get_json()["error"] == "Amount must be greater than 0"
+
+
+def test_update_transaction(client):
+    transaction = {
+        "name": "Original Coffee",
+        "amount": 4.50,
+        "category": "Food",
+        "date": "2026-10-27",
+        "transaction_type": "Expense"
+    }
+
+    create_response = client.post(
+        "/transactions",
+        json=transaction
+    )
+
+    transaction_id = create_response.get_json()["transaction"]["id"]
+
+    updated_transaction = {
+        "name": "Updated Coffee",
+        "amount": 5.50,
+        "category": "Food",
+        "date": "2026-10-27",
+        "transaction_type": "Expense"
+    }
+
+    response = client.put(
+        f"/transactions/{transaction_id}",
+        json=updated_transaction
+    )
+
+    assert response.status_code == 200
+
+    get_response = client.get("/transactions")
+    transactions = get_response.get_json()
+
+    updated_record = next(
+        item for item in transactions
+        if item["id"] == transaction_id
+    )
+
+    assert updated_record["name"] == "Updated Coffee"
+    assert updated_record["amount"] == 5.50
+
